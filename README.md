@@ -46,20 +46,20 @@ const { PasspointPop } = require("passpoint.js");
 Pin a version in production.
 
 ```html
-<script src="https://unpkg.com/passpoint.js@0.1.0/dist/passpoint.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/passpoint.js@0.1.0/dist/passpoint.min.js"></script>
-<script src="https://npmcdn.com/passpoint.js@0.1.0/dist/passpoint.min.js"></script>
+<script src="https://unpkg.com/passpoint.js@0.2.0/dist/passpoint.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/passpoint.js@0.2.0/dist/passpoint.min.js"></script>
+<script src="https://npmcdn.com/passpoint.js@0.2.0/dist/passpoint.min.js"></script>
 ```
 
 Shorthand (`"unpkg"` / `"jsdelivr"` fields):
 
 ```html
-<script src="https://unpkg.com/passpoint.js@0.1.0"></script>
+<script src="https://unpkg.com/passpoint.js@0.2.0"></script>
 ```
 
 ## `origin`
 
-The SDK posts to `{origin}/api/checkout/initialize` and iframes `{origin}/checkout/{accessCode}`.
+When you omit the hooks below, the SDK posts to `{origin}/api/checkout/initialize` and iframes `{origin}/checkout/{accessCode}`.
 
 | How you load the SDK | `origin` |
 | --- | --- |
@@ -67,6 +67,48 @@ The SDK posts to `{origin}/api/checkout/initialize` and iframes `{origin}/checko
 | `npm install` or CDN on a merchant site | **required** — set it to your checkout host |
 
 Hosted demo origin: `https://passpoint-js.vercel.app`
+
+## Integrator hooks
+
+Merchants who already host checkout on their own origin can own initialize and the iframe URL. The SDK stays generic — prefix the routes however you like.
+
+Iframe `src` is `initialize`'s `checkoutUrl` if returned, otherwise `checkoutUrl(accessCode)` if provided, otherwise `{origin}/checkout/{accessCode}`.
+
+```js
+import { PasspointPop } from "passpoint.js";
+
+new PasspointPop().newTransaction({
+  key: "pk_live_your_public_key",
+  email: "customer@email.com",
+  amount: 500000,
+  currency: "NGN",
+  async initialize(payload) {
+    // payload is the same body the SDK would POST to /api/checkout/initialize
+    const res = await fetch("/internal/billing/passpoint/initialize", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const { accessCode } = await res.json();
+    return { accessCode };
+  },
+  checkoutUrl: (accessCode) => `/passpoint/checkout/${accessCode}`,
+  onSuccess(txn) {
+    console.log(txn.reference);
+  },
+});
+```
+
+`initialize` may also return the iframe URL directly:
+
+```js
+async initialize(payload) {
+  const { accessCode } = await createSession(payload);
+  return { accessCode, checkoutUrl: `/passpoint/checkout/${accessCode}` };
+}
+```
+
+If `initialize` is omitted, the SDK still POSTs to `{origin}/api/checkout/initialize`.
 
 ## Paystack-compatible API
 

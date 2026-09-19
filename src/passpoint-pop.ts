@@ -1,3 +1,4 @@
+import { checkoutHost, createCheckoutSession } from "./session";
 import type { PasspointPopOptions, TransactionResult } from "./types";
 
 const SOURCE = "passpoint";
@@ -5,15 +6,6 @@ const SOURCE = "passpoint";
 type CheckoutEvent =
   | { source: string; event: "success"; data: TransactionResult }
   | { source: string; event: "cancel" | "close" };
-
-type InitializeResponse = {
-  data?: { accessCode: string };
-  responseMessage?: string;
-};
-
-function randomRef() {
-  return "PSK_" + Math.random().toString(36).slice(2, 12).toUpperCase();
-}
 
 function ensureOverlay(): HTMLDivElement {
   const existing = document.getElementById("passpoint-js-root");
@@ -53,38 +45,15 @@ export class PasspointPop {
   async openIframe(): Promise<void> {
     const opts = this.opts;
     if (!opts) throw new Error("PasspointPop: call setup() or newTransaction() first");
-    const origin = (opts.origin || window.location.origin).replace(/\/$/, "");
-    const body = {
-      key: opts.key,
-      email: opts.email,
-      amount: opts.amount,
-      currency: opts.currency || "NGN",
-      ref: opts.ref || opts.reference || randomRef(),
-      channels: opts.channels,
-      metadata: opts.metadata,
-      firstName: opts.firstName,
-      lastName: opts.lastName,
-      phone: opts.phone,
-      label: opts.label,
-      callbackUrl: opts.callback_url || opts.callbackUrl,
-      merchantName: opts.merchantName,
-    };
-    const res = await fetch(origin + "/api/checkout/initialize", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    const json = (await res.json()) as InitializeResponse;
-    if (!json.data) {
-      throw new Error(json.responseMessage || "Unable to initialize Passpoint checkout");
-    }
+    const origin = checkoutHost(opts.origin, window.location.origin);
+    const session = await createCheckoutSession(opts, origin);
     const root = ensureOverlay();
     const iframe = root.querySelector("iframe");
     const backdrop = root.querySelector("[data-pp-backdrop]");
     if (!(iframe instanceof HTMLIFrameElement)) {
       throw new Error("PasspointPop: checkout frame missing");
     }
-    iframe.src = origin + "/checkout/" + json.data.accessCode;
+    iframe.src = session.iframeSrc;
     root.style.display = "block";
     document.body.style.overflow = "hidden";
     window.addEventListener("message", this.onMessage);
