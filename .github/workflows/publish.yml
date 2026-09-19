@@ -33,8 +33,11 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          if [ -z "$NODE_AUTH_TOKEN" ]; then
-            echo "::error::Add an npm automation token as the NPM_TOKEN repository secret, then re-run."
-            exit 1
+          # Prefer npm trusted publishing (OIDC). NPM_TOKEN is an optional
+          # fallback if a trusted publisher is not configured yet.
+          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
+            echo "No NPM_TOKEN secret; publishing via OIDC trusted publisher."
+            unset NODE_AUTH_TOKEN
+            npm config delete "//registry.npmjs.org/:_authToken" || true
           fi
           npm publish --access public --provenance
