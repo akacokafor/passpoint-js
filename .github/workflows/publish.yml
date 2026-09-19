@@ -30,6 +30,10 @@ jobs:
       - run: npm test
       - name: Publish to npm
         run: |
+          # setup-node writes an empty _authToken when registry-url is set;
+          # that blocks OIDC trusted publishing.
+          unset NODE_AUTH_TOKEN
+          npm config delete "//registry.npmjs.org/:_authToken" || true
           VERSION="$(node -p "require('./package.json').version")"
           if npm view "passpoint.js@${VERSION}" version >/dev/null 2>&1; then
             echo "passpoint.js@${VERSION} is already on npm; skipping publish."
