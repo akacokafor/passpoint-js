@@ -18,8 +18,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
+          node-version: 24
           registry-url: https://registry.npmjs.org
       - run: npm ci
       - name: Align package version with git tag
@@ -30,14 +29,10 @@ jobs:
       - run: npm run build
       - run: npm test
       - name: Publish to npm
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          # Prefer npm trusted publishing (OIDC). NPM_TOKEN is an optional
-          # fallback if a trusted publisher is not configured yet.
-          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
-            echo "No NPM_TOKEN secret; publishing via OIDC trusted publisher."
-            unset NODE_AUTH_TOKEN
-            npm config delete "//registry.npmjs.org/:_authToken" || true
+          VERSION="$(node -p "require('./package.json').version")"
+          if npm view "passpoint.js@${VERSION}" version >/dev/null 2>&1; then
+            echo "passpoint.js@${VERSION} is already on npm; skipping publish."
+            exit 0
           fi
-          npm publish --access public --provenance
+          npm publish --access public
