@@ -1,0 +1,64 @@
+{
+  "name": "passpoint.js",
+  "version": "0.1.0",
+  "description": "Paystack-style collection JavaScript SDK for Passpoint — cards, mobile money, virtual accounts, and Open Banking.",
+  "license": "MIT",
+  "author": "Akachukwu Okafor <okafor.ak@outlook.com>",
+  "homepage": "https://github.com/akacokafor/passpoint-js#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akacokafor/passpoint-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/akacokafor/passpoint-js/issues"
+  },
+  "keywords": [
+    "passpoint",
+    "payments",
+    "checkout",
+    "paystack",
+    "inline",
+    "nigeria",
+    "momo",
+    "open-banking"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "unpkg": "./dist/passpoint.min.js",
+  "jsdelivr": "./dist/passpoint.min.js",
+  "browser": "./dist/passpoint.min.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json",
+    "./dist/passpoint.js": "./dist/passpoint.js",
+    "./dist/passpoint.min.js": "./dist/passpoint.min.js"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "prepack": "node scripts/build.mjs",
+    "test": "node scripts/smoke.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "typescript": "^5.7.0"
+  }
+}
