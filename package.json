@@ -1,6 +1,6 @@
 {
   "name": "passpoint.js",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Paystack-style collection JavaScript SDK for Passpoint — cards, mobile money, virtual accounts, and Open Banking.",
   "license": "MIT",
   "author": "Akachukwu Okafor <okafor.ak@outlook.com>",
@@ -54,7 +54,7 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "prepack": "node scripts/build.mjs",
-    "test": "node scripts/smoke.mjs"
+    "test": "node --test scripts/hooks.test.mjs && node scripts/smoke.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.25.0",

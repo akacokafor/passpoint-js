@@ -12,5 +12,5 @@
     "skipLibCheck": true,
     "isolatedModules": true
   },
-  "include": ["src/index.ts", "src/passpoint-pop.ts", "src/types.ts"]
+  "include": ["src/index.ts", "src/passpoint-pop.ts", "src/session.ts", "src/types.ts"]
 }
